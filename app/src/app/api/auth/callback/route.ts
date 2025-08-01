@@ -1,3 +1,18 @@
+import { Pool } from 'pg';
+import 'dotenv/config';
+
+const isLocal = process.env.NEST_LOCAL === 'true';
+
+const connectionString = isLocal
+    ? `postgres://${process.env.DB_USER}@localhost/${process.env.DB_NAME}?sslmode=disable&host=/var/run/postgresql`
+    : `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@hackclub.app/${process.env.DB_NAME}`;
+
+const pool = new Pool({
+    connectionString,
+    ssl: isLocal ? undefined : { rejectUnauthorized: false },
+    connectionTimeoutMillis: 50000
+});
+
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const code = searchParams.get("code");
@@ -26,13 +41,15 @@ export async function GET(req: Request) {
 
     const userInfo = await userData.json();
 
-    console.log(JSON.stringify(data, null, 2));
+    const email = userInfo.user?.profile?.email;
 
-    console.log(JSON.stringify(userId));
+    await pool.query(`
+  INSERT INTO slack_users (slack_id, email)
+  VALUES ($1, $2)
+  ON CONFLICT (slack_id) DO NOTHING
+`, [userId, email]);
 
-    console.log(JSON.stringify(userData));
-
-    console.log(JSON.stringify(userInfo.user?.profile?.email));
+    console.log({ slack_id: userId, email });
 
     return Response.redirect(new URL("/dashboard", req.url));
 }
