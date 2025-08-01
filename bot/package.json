@@ -10,6 +10,7 @@
         "typescript": "^5.8.3"
     },
     "scripts": {
-        "start": "tsx watch bot.ts"
+        "start": "tsx watch bot.ts",
+        "dev": "tsx bot.ts"
     }
 }
