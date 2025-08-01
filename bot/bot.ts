@@ -4,16 +4,16 @@ import 'dotenv/config';
 
 const { App } = SlackBolt;
 
+const isLocal = process.env.NEST_LOCAL === 'true';
+
+const connectionString = isLocal
+    ? `postgres://${process.env.DB_USER}@localhost/${process.env.DB_NAME}?sslmode=disable&host=/var/run/postgresql`
+    : `postgres://${process.env.DB_USER}:${process.env.DB_PASSWORD}@hackclub.app/${process.env.DB_NAME}`;
+
 const pool = new Pool({
-    host: process.env.DB_HOST,
-    port: Number(process.env.DB_PORT),
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    ssl: {
-        rejectUnauthorized: false
-    },
-    connectionTimeoutMillis: 10000
+    connectionString,
+    ssl: isLocal ? undefined : { rejectUnauthorized: false },
+    connectionTimeoutMillis: 50000
 });
 
 const app = new App({
@@ -73,6 +73,7 @@ app.event('message', async ({ event }) => {
 });
 
 async function start() {
+    console.log(`DB connection: ${isLocal ? 'Local socket' : 'Remote (hackclub.app)'}`);
     const dbTest = await pool.query('SELECT NOW()');
     console.log('database connected:', dbTest.rows[0].now);
     await app.start();
