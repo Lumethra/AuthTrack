@@ -1,0 +1,14 @@
+# Environment files
+.env
+.env*.local
+
+# Database files
+/db/postgres-data/
+*.log
+
+# Next.js
+/.next/
+/node_modules/
+
+# Bot
+/bott/node_modules/
