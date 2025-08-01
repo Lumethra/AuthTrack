@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 export async function GET() {
     const scopes = [
         "users:read",
+        "users:read.email",
+        "users.profile:read",
         "channels:history",
         "groups:history",
         "im:history",
