@@ -15,7 +15,24 @@ export async function GET(req: Request) {
 
     const data = await response.json();
 
+    const userId = data.authed_user?.id;
+
+    const userData = await fetch(`https://slack.com/api/users.info?user=${userId}`, {
+        headers: {
+            Authorization: `Bearer ${data.access_token}`,
+            "Content-Type": "application/json"
+        }
+    });
+
+    const userInfo = await userData.json();
+
     console.log(JSON.stringify(data, null, 2));
+
+    console.log(JSON.stringify(userId));
+
+    console.log(JSON.stringify(userData));
+
+    console.log(JSON.stringify(userInfo.user?.profile?.email));
 
     return Response.redirect(new URL("/dashboard", req.url));
 }
